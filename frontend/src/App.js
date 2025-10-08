@@ -1,9 +1,25 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './App.css';
 
 function App() {
   const [drawing, setDrawing] = useState(false);
   const canvasRef = useRef(null);
+  const [dimensions, setDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+
+  // Update canvas size on window resize for responsiveness
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Canvas drawing handlers
   const startDrawing = (e) => {
@@ -21,7 +37,7 @@ function App() {
     const ctx = canvas.getContext('2d');
     const { x, y } = getCursorPosition(e, canvas);
     ctx.lineTo(x, y);
-    ctx.strokeStyle = "#2D5F9A"; // Changed to a blue shade
+    ctx.strokeStyle = "#fff"; // Changed pen color to white
     ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
     ctx.stroke();
@@ -66,107 +82,76 @@ function App() {
       style={{
         minHeight: '100vh',
         height: '100vh',
+        width: '100vw',
         overflow: 'hidden',
         background: 'linear-gradient(135deg, #f0f4fd 0%, #d9e7fa 100%)',
-        display: 'flex',                // Add flex
-        justifyContent: 'center',       // Center horizontally
-        alignItems: 'center'            // Center vertically
+        position: 'relative'
       }}
     >
-      <header className="App-header" style={{ width: '100%' }}>
-        <h2
-          style={{
-            color: '#2D5F9A',
-            background: '#fafdff',
-            padding: '12px 0',
-            borderRadius: 10,
-            marginBottom: 32,
-            letterSpacing: 1,
-            boxShadow: '0 2px 8px rgba(45,95,154,0.10)'
-          }}
-        >
-          Suggestion Window
-        </h2>
-        <div
-          style={{
-            width: 600,
-            background: '#fafdff',
-            borderRadius: 18,
-            boxShadow: '0 6px 32px rgba(45,95,154,0.10)',
-            padding: 36,
-            margin: '0 auto'
-          }}
-        >
-          <form onSubmit={handleSubmit}>
-            <div
-              style={{
-                marginBottom: 24,
-                display: 'flex',
-                justifyContent: 'center', // Center horizontally
-                alignItems: 'center',     // Center vertically (if needed)
-                flexDirection: 'column'
-              }}
-            >
-              <canvas
-                ref={canvasRef}
-                width={540}
-                height={300}
-                style={{
-                  border: '2px solid #a3bde3',
-                  borderRadius: 14,
-                  background: '#eaf2fb',
-                  touchAction: 'none',
-                  boxShadow: '0 2px 8px rgba(45,95,154,0.06)'
-                }}
-                onMouseDown={startDrawing}
-                onMouseMove={draw}
-                onMouseUp={stopDrawing}
-                onMouseLeave={stopDrawing}
-                onTouchStart={startDrawing}
-                onTouchMove={draw}
-                onTouchEnd={stopDrawing}
-              />
-              <div style={{ marginTop: 12, textAlign: 'right', width: '100%' }}>
-                <button
-                  type="button"
-                  onClick={clearCanvas}
-                  style={{
-                    fontSize: 16,
-                    padding: '6px 18px',
-                    background: '#a3bde3',
-                    color: '#2D5F9A',
-                    border: 'none',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    fontWeight: 500,
-                    transition: 'background 0.2s'
-                  }}
-                >
-                  Clear
-                </button>
-              </div>
-            </div>
-            <button
-              type="submit"
-              style={{
-                width: '100%',
-                padding: '16px 0',
-                fontSize: '1.2rem',
-                background: 'linear-gradient(90deg, #2D5F9A 60%, #6CA0DC 100%)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-                fontWeight: 600,
-                letterSpacing: 1,
-                boxShadow: '0 2px 8px rgba(45,95,154,0.08)'
-              }}
-            >
-              Send
-            </button>
-          </form>
-        </div>
-      </header>
+      <canvas
+        ref={canvasRef}
+        width={dimensions.width}
+        height={dimensions.height}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          border: 'none',
+          background: '#050e2eff',
+          touchAction: 'none',
+          zIndex: 1
+        }}
+        onMouseDown={startDrawing}
+        onMouseMove={draw}
+        onMouseUp={stopDrawing}
+        onMouseLeave={stopDrawing}
+        onTouchStart={startDrawing}
+        onTouchMove={draw}
+        onTouchEnd={stopDrawing}
+      />
+      <button
+        type="button"
+        onClick={handleSubmit}
+        style={{
+          position: 'absolute',
+          bottom: 40,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 2,
+          padding: '20px 60px',
+          fontSize: '1.5rem',
+          background: '#fff',
+          color: '#2D5F9A',
+          border: 'none',
+          borderRadius: 12,
+          cursor: 'pointer',
+          fontWeight: 700,
+          letterSpacing: 1,
+          boxShadow: '0 4px 16px rgba(45,95,154,0.12)'
+        }}
+      >
+        Send
+      </button>
+      <h2
+        style={{
+          position: 'absolute',
+          top: 30,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          color: '#2D5F9A',
+          background: '#fafdff',
+          padding: '12px 32px',
+          borderRadius: 10,
+          letterSpacing: 1,
+          boxShadow: '0 2px 8px rgba(45,95,154,0.10)',
+          zIndex: 2,
+          fontSize: '2rem',
+          fontWeight: 700,
+          margin: 0
+        }}
+      >
+        Suggestion Window
+      </h2>
     </div>
   );
 }
