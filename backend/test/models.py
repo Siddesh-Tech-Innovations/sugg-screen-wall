@@ -3,16 +3,6 @@ from datetime import datetime
 from typing import List, Optional, Any
 from bson import ObjectId
 
-# Shared response models
-class SubmissionSuccessData(BaseModel):
-    id: str
-    created_at: datetime
-
-class SubmissionSuccessResponse(BaseModel):
-    success: bool = True
-    message: str = "Submission received successfully"
-    data: SubmissionSuccessData
-
 # Request Body Models
 class SubmissionCreate(BaseModel):
     content: str = Field(..., min_length=10, max_length=1000, description="Content must be between 10 and 1000 characters")

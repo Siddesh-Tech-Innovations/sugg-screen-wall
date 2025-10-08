@@ -27,6 +27,16 @@ class PyObjectId(ObjectId):
 class SubmissionCreate(BaseModel):
     content: str = Field(..., min_length=10, max_length=1000)
 
+class SubmissionSuccessData(BaseModel):
+    id: str
+    created_at: datetime
+
+class SubmissionSuccessResponse(BaseModel):
+    success: bool = True
+    message: str = "Submission received successfully"
+    data: SubmissionSuccessData
+
+
 class SubmissionInDB(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     content: str

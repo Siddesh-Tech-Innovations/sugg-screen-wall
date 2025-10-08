@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import FastAPI
-#from fastapi.middleware.cors import CORSMiddleware
+
 import os
 
 from routes import submissions, admin, auth as auth_router
@@ -13,18 +13,7 @@ app = FastAPI(title="Suggestion Screen App")
 
 app.state.limiter = limiter
 
-# CORS
-#origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
 
-# CORS
-'''app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-'''
 # Routes
 app.include_router(submissions.router, prefix="/api")
 app.include_router(auth_router.router, prefix="/api/auth")
