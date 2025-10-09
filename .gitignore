@@ -1,0 +1,7 @@
+*/node_modules/*
+*.env
+*.venv
+.venv/
+# Created by venv; see https://docs.python.org/3/library/venv.h
+*/__pycache__/
+backend/Lib*/
