@@ -25,11 +25,12 @@ class PyObjectId(ObjectId):
 # ========== SUBMISSION ==========
 
 class SubmissionCreate(BaseModel):
-    content: str = Field(..., min_length=10, max_length=1000)
+    image_data: str = Field(..., description="Base64 encoded image data of handwritten text")
 
 class SubmissionSuccessData(BaseModel):
     id: str
     created_at: datetime
+    extracted_text: str
 
 class SubmissionSuccessResponse(BaseModel):
     success: bool = True

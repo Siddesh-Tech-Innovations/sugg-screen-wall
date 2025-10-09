@@ -3,6 +3,7 @@ from models import SubmissionCreate, SubmissionSuccessResponse, SubmissionSucces
 from database import db
 from datetime import datetime
 from utils.classify import classify_submission, hash_ip
+from utils.ocr_simple import extract_text_from_image, validate_extracted_text
 from user_agents import parse as parse_user_agent
 from limiter import limiter
 
@@ -16,25 +17,47 @@ async def submit_suggestion(request: Request, submission: SubmissionCreate):
     ua = request.headers.get("user-agent", "")
     user_agent = parse_user_agent(ua).ua_string[:255]
 
-    content = submission.content.strip()
-    category = classify_submission(content)
-    sentiment = "neutral"  # Placeholder
+    try:
+        # Extract text from the image
+        extracted_text = extract_text_from_image(submission.image_data)
+        
+        # Validate extracted text
+        is_valid, error_message = validate_extracted_text(extracted_text)
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_message
+            )
+        
+        content = extracted_text.strip()
+        category = classify_submission(content)
+        sentiment = "neutral"  # Placeholder
 
-    doc = {
-        "content": content,
-        "category": category,
-        "viewed": False,
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
-        "ip_address": ip_hashed,
-        "user_agent": user_agent,
-        "sentiment": sentiment
-    }
+        doc = {
+            "content": content,
+            "category": category,
+            "viewed": False,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow(),
+            "ip_address": ip_hashed,
+            "user_agent": user_agent,
+            "sentiment": sentiment
+        }
 
-    result = await db.submissions.insert_one(doc)
+        result = await db.submissions.insert_one(doc)
 
-    return SubmissionSuccessResponse(
-        data=SubmissionSuccessData(
-            id=str(result.inserted_id),
-            created_at=doc["created_at"]
-        ))
+        return SubmissionSuccessResponse(
+            data=SubmissionSuccessData(
+                id=str(result.inserted_id),
+                created_at=doc["created_at"],
+                extracted_text=content
+            ))
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error processing submission: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error processing handwritten text. Please try again."
+        )
