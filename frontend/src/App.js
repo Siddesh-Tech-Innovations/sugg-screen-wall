@@ -134,6 +134,26 @@ function App() {
     }
   };
 
+  // Function to capture canvas with background color
+  const captureCanvasWithBackground = (canvas) => {
+    // Create a new canvas with the same dimensions
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    
+    // Fill with background color first
+    tempCtx.fillStyle = '#050e2eff'; // Same as CSS background
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    
+    // Draw the original canvas on top
+    tempCtx.drawImage(canvas, 0, 0);
+    
+    // Return the image with background
+    return tempCanvas.toDataURL('image/png');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -154,9 +174,9 @@ function App() {
     setIsSubmitting(true);
     
     try {
-      // Step 1: Convert canvas to base64 image
-      const imageDataUrl = canvas.toDataURL('image/png');
-      console.log('📸 Canvas image captured');
+      // Step 1: Convert canvas to base64 image with background
+      const imageDataUrl = captureCanvasWithBackground(canvas);
+      console.log('📸 Canvas image captured with background');
       
       // Step 2: Upload to Google Cloud Storage
       console.log('📤 Uploading to Google Cloud Storage...');
@@ -168,7 +188,16 @@ function App() {
       
       // Step 4: Show result to user
       if (whatsappResult.success) {
-        alert(`✅ Success! Your suggestion has been uploaded and sent via WhatsApp!\n\nImage URL: ${imageUrl}\nWhatsApp Response: ${JSON.stringify(whatsappResult.response.statusDesc || 'Message sent successfully')}`);
+        const successMsg = `✅ Success! Your suggestion has been uploaded and sent via WhatsApp!
+
+Image URL: ${imageUrl}
+
+WhatsApp Results:
+• Total Recipients: ${whatsappResult.total_recipients}
+• Successful Sends: ${whatsappResult.successful_sends}
+• Failed Sends: ${whatsappResult.failed_sends}`;
+        
+        alert(successMsg);
         clearCanvas();
       } else {
         alert(`⚠️ Partial Success: Image uploaded to ${imageUrl}\nBut WhatsApp sending failed: ${whatsappResult.error}`);
