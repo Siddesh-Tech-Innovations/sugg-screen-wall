@@ -34,8 +34,8 @@ WHATSAPP_AUTH_TOKEN = "UXdTWf5lhUy7vj6v05hLbw"
 WHATSAPP_SENDER = "919168616243"
 WHATSAPP_RECIPIENTS = [
     "918623059461",  # Original recipient
-    "919921059461",  # Additional recipient 1
-    "919876543210"   # Additional recipient 2 (replace with actual number)
+    # "919145288018",  # Additional recipient 1
+    # "919876543210"   # Additional recipient 2 (replace with actual number)
 ]
 WHATSAPP_TEMPLATE = "auto_message6"
 
