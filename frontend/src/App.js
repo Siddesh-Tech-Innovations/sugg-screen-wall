@@ -1,22 +1,12 @@
 import React from 'react';
 import './App.css';
+import AdminForm from './AdminForm';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Welcome to React App</h1>
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <AdminForm />
       </header>
     </div>
   );
