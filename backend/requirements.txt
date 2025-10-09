@@ -21,4 +21,4 @@ numpy==1.24.3
 # OCR Options (choose one or more)
 # pytesseract==0.3.10  # Uncomment for Tesseract OCR
 # google-cloud-vision==3.4.4  # Uncomment for Google Vision API
-# openai==1.3.3  # Uncomment for OpenAI Vision API
+# openai==1.3.3  # Uncomment for OpenAI Vision APIpython-dotenv

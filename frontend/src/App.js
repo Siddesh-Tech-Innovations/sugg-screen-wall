@@ -71,6 +71,69 @@ function App() {
     };
   };
 
+  // Configuration from environment variables
+  const GCS_BUCKET_NAME = process.env.REACT_APP_GCS_BUCKET_NAME || 'suggestion-screen-images';
+  const WHATSAPP_API_URL = process.env.REACT_APP_WHATSAPP_API_URL || 'https://cloudapi.wbbox.in/api/v1.0/messages/send-template';
+  const WHATSAPP_AUTH_TOKEN = process.env.REACT_APP_WHATSAPP_AUTH_TOKEN || 'UXdTWf5lhUy7vj6v05hLbw';
+  const WHATSAPP_SENDER = process.env.REACT_APP_WHATSAPP_SENDER || '919168616243';
+  const WHATSAPP_RECIPIENT = process.env.REACT_APP_WHATSAPP_RECIPIENT || '918623059461';
+  const WHATSAPP_TEMPLATE = process.env.REACT_APP_WHATSAPP_TEMPLATE || 'auto_message6';
+
+  // Function to upload image to Google Cloud Storage via simple backend
+  const uploadToGCS = async (base64Data) => {
+    try {
+      const response = await fetch('http://localhost:8001/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image_data: base64Data
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Image uploaded to GCS:', result.url);
+        return result.url;
+      } else {
+        const error = await response.text();
+        throw new Error(`GCS upload failed: ${response.status} ${error}`);
+      }
+    } catch (error) {
+      console.error('❌ GCS upload error:', error);
+      throw error;
+    }
+  };
+
+  // Function to send WhatsApp message via backend
+  const sendWhatsAppMessage = async (imageUrl) => {
+    try {
+      const response = await fetch('http://localhost:8001/send-whatsapp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image_url: imageUrl
+        })
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        console.log('✅ WhatsApp message sent successfully:', result);
+        return result;
+      } else {
+        console.error('❌ WhatsApp API error:', result);
+        return { success: false, error: `Backend error: ${response.status}` };
+      }
+    } catch (error) {
+      console.error('❌ WhatsApp service error:', error);
+      return { success: false, error: `Network error: ${error.message}` };
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -91,31 +154,29 @@ function App() {
     setIsSubmitting(true);
     
     try {
-      // Convert canvas to base64 image
+      // Step 1: Convert canvas to base64 image
       const imageDataUrl = canvas.toDataURL('image/png');
+      console.log('📸 Canvas image captured');
       
-      // Send to backend
-      const response = await fetch('http://localhost:8000/api/submissions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          image_data: imageDataUrl
-        })
-      });
+      // Step 2: Upload to Google Cloud Storage
+      console.log('📤 Uploading to Google Cloud Storage...');
+      const imageUrl = await uploadToGCS(imageDataUrl);
       
-      const result = await response.json();
+      // Step 3: Send WhatsApp message with image link
+      console.log('📱 Sending WhatsApp message...');
+      const whatsappResult = await sendWhatsAppMessage(imageUrl);
       
-      if (response.ok) {
-        alert(`Success! Your handwriting was processed: "${result.data.extracted_text}"`);
+      // Step 4: Show result to user
+      if (whatsappResult.success) {
+        alert(`✅ Success! Your suggestion has been uploaded and sent via WhatsApp!\n\nImage URL: ${imageUrl}\nWhatsApp Response: ${JSON.stringify(whatsappResult.response.statusDesc || 'Message sent successfully')}`);
         clearCanvas();
       } else {
-        alert(`Error: ${result.detail || result.message || 'Failed to submit suggestion'}`);
+        alert(`⚠️ Partial Success: Image uploaded to ${imageUrl}\nBut WhatsApp sending failed: ${whatsappResult.error}`);
       }
+      
     } catch (error) {
-      console.error('Error submitting suggestion:', error);
-      alert('Network error. Please check if the backend server is running and try again.');
+      console.error('❌ Error in submission process:', error);
+      alert(`❌ Error: ${error.message || 'Failed to process suggestion'}`);
     } finally {
       setIsSubmitting(false);
     }
