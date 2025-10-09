@@ -46,7 +46,7 @@ async def upload_image(upload: ImageUpload):
         
         # Initialize client
         client = storage.Client.from_service_account_json(
-            '/home/jacquewill/AI_Supremacy/sidd-tech-innv/suggestion-screen-service-account.json'
+            '../suggestion-screen-service-account.json'
         )
         
         # Remove data URL prefix
